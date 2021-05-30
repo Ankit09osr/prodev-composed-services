@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+    app:
+        build: 
+            context: ./app
+            dockerfile:  Dockerfile.dev
+        volumes: 
+            - ./app/data:/usr/src/app/data
+            - ./app/src:/usr/src/app/src
+    auth:
+        build:
+            context: ./auth
+            dockerfile:  Dockerfile.dev
+        environment: 
+            JWT_SECRET: "testjwt"
+            MONGODB_URL: "mongodb://mongodb/prodev-composed-auth"
+        volumes: 
+            - ./auth/src:/usr/src/app/src
+        depends_on: 
+            - mongodb
+    ghi:
+        build: ./ghi
+        ports: 
+            - 8910:80
+        volumes: 
+            -  ./ghi/static:/usr/share/nginx/html
+        depends_on: 
+            - app
+            - auth
+    mongodb: 
+        image: "mongo:4-bionic"
+        volumes: 
+            -  ./auth/data:/data/db
