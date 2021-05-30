@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - mongodb
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: development
+      MONGODB_URL: mongodb://mongodb/prodev-composed-auth
+    volumes:
+        - ./auth/src:/usr/src/app/src
+  mongodb:
+    image: mongo:4-bionic
+    volumes:
+      - ./auth/data:/data/db
+  ghi:
+    build: ./ghi
+    depends_on:
+      - app
+      - auth
+    ports:
+      - "8080:80"
+    restart: always
+    volumes:
+      - ./ghi/static:/usr/share/nginx/html
+  app:
+      build:
+        context: ./app
+        dockerfile: Dockerfile.dev
+      volumes:
+        - ./app/data:/usr/src/app/data
+        - ./app/src:/usr/src/app/src
